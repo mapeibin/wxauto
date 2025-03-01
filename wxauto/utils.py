@@ -294,23 +294,31 @@ def ParseWeChatTime(time_str):
 
 
 def RollIntoView(win, ele, equal=False):
-    if ele.BoundingRectangle.top < win.BoundingRectangle.top:
-        # 上滚动
-        while True:
-            win.WheelUp(wheelTimes=1, waitTime=0.1)
-            if ele.BoundingRectangle.top >= win.BoundingRectangle.top:
-                break
+    while ele.BoundingRectangle.ycenter() < win.BoundingRectangle.top or ele.BoundingRectangle.ycenter() >= win.BoundingRectangle.bottom:
+        if ele.BoundingRectangle.ycenter() < win.BoundingRectangle.top:
+            # 上滚动
+            while True:
+                win.WheelUp(wheelTimes=1)
+                time.sleep(0.1)
+                if equal:
+                    if ele.BoundingRectangle.ycenter() >= win.BoundingRectangle.top:
+                        break
+                else:
+                    if ele.BoundingRectangle.ycenter() > win.BoundingRectangle.top:
+                        break
 
-    elif ele.BoundingRectangle.bottom >= win.BoundingRectangle.bottom:
-        # 下滚动
-        while True:
-            win.WheelDown(wheelTimes=1, waitTime=0.1)
-            if equal:
-                if ele.BoundingRectangle.bottom <= win.BoundingRectangle.bottom:
-                    break
-            else:
-                if ele.BoundingRectangle.bottom < win.BoundingRectangle.bottom:
-                    break
+        elif ele.BoundingRectangle.ycenter() >= win.BoundingRectangle.bottom:
+            # 下滚动
+            while True:
+                win.WheelDown(wheelTimes=3)
+                time.sleep(0.1)
+                if equal:
+                    if ele.BoundingRectangle.ycenter() <= win.BoundingRectangle.bottom:
+                        break
+                else:
+                    if ele.BoundingRectangle.ycenter() < win.BoundingRectangle.bottom:
+                        break
+        time.sleep(0.3)
 
 wxlog = logging.getLogger('wxauto')
 wxlog.setLevel(logging.DEBUG)

@@ -543,29 +543,42 @@ class NewFriendsElement:
         self.msg = self.ele.GetFirstChildControl().PaneControl(SearchDepth=1).GetChildren()[-1].TextControl().Name
         self.ele.GetChildren()[-1]
         self.Status = self.ele.GetFirstChildControl().GetChildren()[-1]
+        self.NewFriendsBox = self._wx.ChatBox.ListControl(Name='新的朋友').GetParentControl()
         self.acceptable = False
         if isinstance(self.Status, uia.ButtonControl):
             self.acceptable = True
 
     def __repr__(self) -> str:
         return f"<wxauto New Friends Element at {hex(id(self))} ({self.name}: {self.msg})>"
-
-    def Accept(self, remark=None, tags=None):
+    
+    def Accept(self, remark=None, tags=None, permission='朋友圈'):
         """接受好友请求
         
         Args:
             remark (str, optional): 备注名
             tags (list, optional): 标签列表
+            permission (str, optional): 朋友圈权限, 可选值：'朋友圈', '仅聊天'
         """
+        if not self.acceptable:
+            wxlog.debug(f"当前好友状态无法接受好友请求：{self.name}")
+            return 
         wxlog.debug(f"接受好友请求：{self.name}  备注：{remark} 标签：{tags}")
         self._wx._show()
+        RollIntoView(self.NewFriendsBox, self.Status)
         self.Status.Click(simulateMove=False)
         NewFriendsWnd = self._wx.UiaAPI.WindowControl(ClassName='WeUIDialog')
+        tipscontrol = NewFriendsWnd.TextControl(Name="你的联系人较多，添加新的朋友时需选择权限")
+
+        permission_sns = NewFriendsWnd.CheckBoxControl(Name='聊天、朋友圈、微信运动等')
+        permission_chat = NewFriendsWnd.CheckBoxControl(Name='仅聊天')
+        if tipscontrol.Exists(0.5):
+            permission_sns = tipscontrol.GetParentControl().GetParentControl().TextControl(Name='朋友圈')
+            permission_chat = tipscontrol.GetParentControl().GetParentControl().TextControl(Name='仅聊天')
 
         if remark:
             remarkedit = NewFriendsWnd.TextControl(Name='备注名').GetParentControl().EditControl()
             remarkedit.Click(simulateMove=False)
-            remarkedit.SendKeys('{Ctrl}a', waitTime=0)
+            remarkedit.SendKeys("{Ctrl}a")
             remarkedit.SendKeys(remark)
         
         if tags:
@@ -574,6 +587,11 @@ class NewFriendsElement:
                 tagedit.Click(simulateMove=False)
                 tagedit.SendKeys(tag)
                 NewFriendsWnd.PaneControl(ClassName='DropdownWindow').TextControl().Click(simulateMove=False)
+
+        if permission == '朋友圈':
+            permission_sns.Click(simulateMove=False)
+        elif permission == '仅聊天':
+            permission_chat.Click(simulateMove=False)
 
         NewFriendsWnd.ButtonControl(Name='确定').Click(simulateMove=False)
 

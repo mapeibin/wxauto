@@ -72,6 +72,7 @@ class WeChat(WeChatBase):
         msgs_ = self.GetAllMessage()
         self.usedmsgid = [i[-1] for i in msgs_]
         print(f'初始化成功，获取到已登录窗口：{self.nickname}')
+        print("local_version")
     
     def _checkversion(self):
         self.HWND = FindWindow(classname='WeChatMainWndForPC')
